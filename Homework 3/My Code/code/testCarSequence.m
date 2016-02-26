@@ -3,6 +3,7 @@ close all;
 
 % Load frames
 load(fullfile('..','data','carseq.mat')); % variable name = frames. 
+numOfFrames = size(frames, 3);
 
 % Initialize position of the car that we want to track
 rect = [60, 117, 146, 152];
@@ -11,21 +12,23 @@ rect = [60, 117, 146, 152];
 reportFrames = [1 100 200 300 400];
 
 % Initialization
-rects = zeros(size(frames, 3), 4);
+rects = zeros(numOfFrames, 4);
 
 % Track the car in the consecutive frames
-for i = 1 : size(frames, 3)
+for i = 1 : numOfFrames
     tic;
+    
+    % Extract the current frame
+    currentFrame = squeeze(frames(:, :, i));
     
     % Calculate new position of the car
     if i ~= 1 
-        [u, v] = LucasKanade(squeeze(frames(:, :, i-1)), ...
-            squeeze(frames(:, :, i)), rect);
+        [u, v] = LucasKanade(squeeze(frames(:, :, i-1)), currentFrame, rect);
         rect = rect + [u, v, u, v];
     end
     
     % Draw current frame
-    imshow(frames(:, :, i));
+    imshow(currentFrame);
     hold on
     
     % Draw the rectangle
@@ -40,12 +43,12 @@ for i = 1 : size(frames, 3)
         title(sprintf('%d (%0.3f milliseconds)', i, toc * 1000));
         
         % Save the image
-        path = fullfile('..','results', sprintf('q3_2_frame_%d', reportFrames(j(1))));
+        path = fullfile('..','results', sprintf('q1_3_frame_%d', reportFrames(j(1))));
         print(path, '-djpeg');
     end
     
     % Set the image title
-    title(sprintf('Frame %d of %d', i, size(frames, 3)));
+    title(sprintf('Frame %d of %d', i, numOfFrames));
 
     % Save new position in a variable
     rects(i, :) = rect;
