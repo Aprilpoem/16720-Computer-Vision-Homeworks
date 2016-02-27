@@ -9,15 +9,15 @@ numOfFrames = size(frames, 3);
 firstFrame = squeeze(frames(:, :, 1));
 
 % Initialize position of the car that we want to track
-rect = [60, 117, 146, 152];
+rect0 = [60, 117, 146, 152];
 
 % Frames that should be reported
 reportFrames = [1 100 200 300 400];
 
 % Initialization
 rects = zeros(numOfFrames, 4);
-u1 = 0; v1 = 0; % For normal LK algorithm
-u2 = 0; v2 = 0; % For LK algorithm with template correction
+rect_lk = rect0;
+rect_lkwtc = rect0;
 
 % Track the car in the consecutive frames with template correction
 for i = 1 : numOfFrames
@@ -27,33 +27,20 @@ for i = 1 : numOfFrames
     currentFrame = squeeze(frames(:, :, i));
     
     if i ~= 1 
+        % Extract the previous frame
+        previousFrame = squeeze(frames(:, :, i-1));
+        
         % Calculate new position of the car from previous frame for normal
         % LK algorithm
-        [delta_u1, delta_v1] = LucasKanade(squeeze(frames(:, :, i-1)), ...
-            currentFrame, rect + [u1 v1 u1 v1]);
-        u1 = u1 + delta_u1;
-        v1 = v1 + delta_v1;
+        [u, v] = LucasKanade(previousFrame, currentFrame, rect_lk);
+        rect_lk = rect_lk + [u, v, u, v];
         
         % Calculate new position of the car from previous frame for the
         % LK algorithm with template correction
-        [delta_u_n, delta_v_n] = LucasKanade(squeeze(frames(:, :, i-1)), ...
-            currentFrame, rect + [u2 v2 u2 v2]);
-        u_n = u2 + delta_u_n;
-        v_n = v2 + delta_v_n;
+        [u, v] = LucasKanadeWithTemplateCorrection(previousFrame, ...
+            currentFrame, rect_lkwtc, firstFrame, rect0);
+        rect_lkwtc = rect_lkwtc + [u, v, u, v];
 
-        % Calculate new position of the car from the first frame
-        [u_star, v_star] = LucasKanadeWithTemplateCorrection(...
-            firstFrame, currentFrame, rect, [u_n, v_n]');
-
-        % Update the template
-        epsil = 2;
-        if norm([u_star, v_star] - [u_n, v_n]) <= epsil
-            u2 = u_star;
-            v2 = v_star;
-        else
-            u2 = u_n;
-            v2 = v_n;
-        end
     end
     
     % Draw current frame
@@ -61,10 +48,10 @@ for i = 1 : numOfFrames
     hold on
     
     % Draw the rectangles
-    rectangle('Position', [rect(1) + u1, rect(2) + v1, rect(3) - rect(1), ...
-        rect(4) - rect(2)], 'LineWidth', 2, 'EdgeColor', 'g');
-    rectangle('Position', [rect(1) + u2, rect(2) + v2, rect(3) - rect(1), ...
-        rect(4) - rect(2)], 'LineWidth', 2, 'EdgeColor', 'y');
+    rectangle('Position', [rect_lk(1), rect_lk(2), rect_lk(3) - rect_lk(1), ...
+        rect_lk(4) - rect_lk(2)], 'LineWidth', 2, 'EdgeColor', 'g');
+    rectangle('Position', [rect_lkwtc(1), rect_lkwtc(2), rect_lkwtc(3) - rect_lkwtc(1), ...
+        rect_lkwtc(4) - rect_lkwtc(2)], 'LineWidth', 2, 'EdgeColor', 'y');
     hold off
 
     % Check if the frame should be reported as a result
@@ -82,7 +69,7 @@ for i = 1 : numOfFrames
     title(sprintf('Frame %d of %d', i, numOfFrames));
 
     % Save new position in a variable
-    rects(i, :) = rect;
+    rects(i, :) = rect_lkwtc;
     
     % Pause for a few milliseconds
     pause(0.01);
