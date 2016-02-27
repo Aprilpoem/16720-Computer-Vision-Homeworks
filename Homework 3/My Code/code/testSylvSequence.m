@@ -19,7 +19,7 @@ reportFrames = [1 200 300 350 400];
 % Initialization
 rects = zeros(numOfFrames, 4);
 rect_lk = rect0;
-rect_lkwtc = rect0;
+rect_lkwab = rect0;
 
 % Track the car in the consecutive frames with template correction
 for i = 1 : numOfFrames
@@ -38,10 +38,10 @@ for i = 1 : numOfFrames
         rect_lk = rect_lk + [u, v, u, v];
         
         % Calculate new position of the car from previous frame for the
-        % LK algorithm with template correction
-        [u, v] = LucasKanadeWithTemplateCorrection(previousFrame, ...
-            currentFrame, rect_lkwtc, firstFrame, rect0);
-        rect_lkwtc = rect_lkwtc + [u, v, u, v];
+        % LK algorithm with appearance basis
+        [u, v] = LucasKanadeBasis(previousFrame, currentFrame, ...
+            rect_lkwab, bases);
+        rect_lkwab = rect_lkwab + [u, v, u, v];
 
     end
     
@@ -52,8 +52,8 @@ for i = 1 : numOfFrames
     % Draw the rectangles
     rectangle('Position', [rect_lk(1), rect_lk(2), rect_lk(3) - rect_lk(1), ...
         rect_lk(4) - rect_lk(2)], 'LineWidth', 2, 'EdgeColor', 'g');
-    rectangle('Position', [rect_lkwtc(1), rect_lkwtc(2), rect_lkwtc(3) - rect_lkwtc(1), ...
-        rect_lkwtc(4) - rect_lkwtc(2)], 'LineWidth', 2, 'EdgeColor', 'y');
+    rectangle('Position', [rect_lkwab(1), rect_lkwab(2), rect_lkwab(3) - rect_lkwab(1), ...
+        rect_lkwab(4) - rect_lkwab(2)], 'LineWidth', 2, 'EdgeColor', 'y');
     hold off
 
     % Check if the frame should be reported as a result
@@ -71,7 +71,7 @@ for i = 1 : numOfFrames
     title(sprintf('Frame %d of %d', i, numOfFrames));
 
     % Save new position in a variable
-    rects(i, :) = rect_lkwtc;
+    rects(i, :) = rect_lkwab;
     
     % Pause for a few milliseconds
     pause(0.01);
