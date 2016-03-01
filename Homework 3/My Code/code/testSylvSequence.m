@@ -1,6 +1,18 @@
 % Close all open figure windows
 close all;
 
+% Faster FPS means that the program skips 4 frames, i.e. it tracks the toy
+% in frames 1, 6, 11, 16, ...
+% For the normal mode, the variable is set to 0, otherwise to 1
+isFastFPS = 0;
+
+% Rate of FPS (Number of skipped frames + 1)
+if isFastFPS ~= 0
+    FPSRate = 5;
+else
+    FPSRate = 1;
+end
+
 % Load frames
 load(fullfile('..','data','sylvseq.mat'));
 numOfFrames = size(frames, 3);
@@ -14,7 +26,11 @@ NumOfBases = size(bases, 3);
 rect0 = [102, 62, 156, 108];
 
 % Frames that should be reported
-reportFrames = [1 200 300 350 400];
+if isFastFPS ~= 0
+    reportFrames = [1 201 301 351 401];
+else
+    reportFrames = [1 200 300 350 400];
+end
 
 % Initialization
 rects = zeros(numOfFrames, 4);
@@ -22,7 +38,7 @@ rect_lk = rect0;
 rect_lkwab = rect0;
 
 % Track the car in the consecutive frames with template correction
-for i = 1 : numOfFrames
+for i = 1 : FPSRate : numOfFrames
     tic;
     
     % Extract the current frame
@@ -30,7 +46,7 @@ for i = 1 : numOfFrames
     
     if i ~= 1 
         % Extract the previous frame
-        previousFrame = squeeze(frames(:, :, i-1));
+        previousFrame = squeeze(frames(:, :, i - FPSRate));
         
         % Calculate new position of the car from previous frame for normal
         % LK algorithm
@@ -52,6 +68,7 @@ for i = 1 : numOfFrames
     % Draw the rectangles
     rectangle('Position', [rect_lk(1), rect_lk(2), rect_lk(3) - rect_lk(1), ...
         rect_lk(4) - rect_lk(2)], 'LineWidth', 2, 'EdgeColor', 'g');
+
     rectangle('Position', [rect_lkwab(1), rect_lkwab(2), rect_lkwab(3) - rect_lkwab(1), ...
         rect_lkwab(4) - rect_lkwab(2)], 'LineWidth', 2, 'EdgeColor', 'y');
     hold off
@@ -63,7 +80,7 @@ for i = 1 : numOfFrames
         title(sprintf('%d (%0.3f milliseconds)', i, toc * 1000));
         
         % Save the image
-        path = fullfile('..','results', sprintf('q2_3_frame_%d', reportFrames(j(1))));
+        path = fullfile('..','results', sprintf('q2_3_frame_fps%d_%d', FPSRate, reportFrames(j(1))));
         print(path, '-djpeg');
     end
     

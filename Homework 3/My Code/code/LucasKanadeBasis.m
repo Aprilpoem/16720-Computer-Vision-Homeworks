@@ -6,7 +6,6 @@ It1 = im2double(It1);
 
 % Initialize parameters
 tol = 0.1;
-deltap = 2 * [tol tol]';
 lambda = zeros(size(basis, 3), 1);
 started = 0;
 p = [0 0]';
@@ -16,13 +15,13 @@ errcomp = 0.1; % To compensate the floating point operation error
 [X, Y] = meshgrid(rect(1) : rect(3) + errcomp, rect(2) : rect(4) + errcomp);
 T = interp2(It, X, Y);
 
-clambda = zeros(size(basis, 3), 1);
-
 %% Lucas-Kanade Tracking with Appearance Basis
 while norm(lambda) >= tol || started == 0
 
     started = 1;
     
+    deltap = 2 * [tol tol]';
+
     % Compute the template that we want to track
     for i = 1 : size(basis, 3)
         T = T + lambda(i) * basis(:, :, i);
@@ -55,6 +54,7 @@ while norm(lambda) >= tol || started == 0
     H = SDQ * SDQ';
 
     % Lucas-Kanade iterative algorithm
+    ps = [];
     while norm(deltap) >= tol
 
         % (1) Warp I (select the region of interest)
@@ -73,8 +73,13 @@ while norm(lambda) >= tol || started == 0
 
         % (9) Update warp
         p = p - deltap;
+        ps = [ps, deltap];
     end
 
+%     subplot(2,1,1);
+%     plot(ps(1, 1:end-1));
+%     subplot(2,1,2);
+%     plot(ps(2, 1:end-1));
     % Update u and v
     u = p(1);
     v = p(2);
@@ -94,7 +99,7 @@ while norm(lambda) >= tol || started == 0
         basisi = basis(:, :, i);
         lambda(i) = basisi(:)' * D(:);
     end
-clambda = clambda + lambda;    
+    
 end
 
 end
