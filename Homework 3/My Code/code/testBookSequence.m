@@ -7,17 +7,14 @@ close all;
 SkipRate = 0;
 
 % Load frames
-load(fullfile('..','data','sylvseq.mat'));
+load(fullfile('..','data','bookSequence.mat'));
 
 % Skip unwanted frames
 frames = frames(:, :, 1 : (SkipRate + 1) : end);
 
 % Load bases
-load(fullfile('..','data','sylvbases.mat'));
+load(fullfile('..','data','bookBases.mat'));
 NumOfBases = size(bases, 3);
-
-% Initialize position of the toy that we want to track
-rect = [102, 62, 156, 108];
 
 % Frames that should be reported
 reportFrames = ceil([1 200 300 350 400] / (SkipRate + 1));
@@ -72,7 +69,7 @@ for i = 1 : numOfFrames
         title(sprintf('%d (%0.3f milliseconds)', i, toc * 1000));
         
         % Save the image
-        path = fullfile('..','results', sprintf('q2_3_skip%d_frame_%d', ...
+        path = fullfile('..','results', sprintf('q2_3_book_skip%d_frame_%d', ...
             SkipRate, reportFrames(j(1))));
         print(path, '-djpeg');
     end
@@ -89,4 +86,4 @@ for i = 1 : numOfFrames
 end
 
 % Save the rects
-save(fullfile('..','results','sylvseqrects.mat'), 'rects');
+save(fullfile('..','results','bookseqrects.mat'), 'rects');
