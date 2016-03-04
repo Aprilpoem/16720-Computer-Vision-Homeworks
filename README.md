@@ -18,4 +18,7 @@ This homework is complete with some extra point implementations (review the Writ
 This homework is complete. however, no extra point problems are implemented due to my time limits (review the Writeup.pdf file for more detailed information). The implementation is very efficient.
 
 ### Homework 3 (Lucas-Kanade Tracking & Background Subtraction)
+This homework is complete with some extra point implementations (review the Writeup.pdf file for more detailed information).
+
+### Homework 4 (3D Reconstruction)
 Working on the homework right now.
