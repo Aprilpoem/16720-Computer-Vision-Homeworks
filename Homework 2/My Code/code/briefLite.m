@@ -15,5 +15,5 @@ load('testPattern');
     th_contrast, th_r);
 
 % Compute a set of valid BRIEF descriptors
-[locs, desc] = computeBrief_rotinv(im, GaussianPyramid, locsDoG, k, levels, ...
+[locs, desc] = computeBrief(im, GaussianPyramid, locsDoG, k, levels, ...
     compareX, compareY);
