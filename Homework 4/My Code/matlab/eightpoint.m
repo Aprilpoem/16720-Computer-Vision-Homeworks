@@ -15,7 +15,7 @@ function [ F ] = eightpoint( pts1, pts2, M )
 pts1 = pts1 / M;
 pts2 = pts2 / M;
 
-%% Generate the matrices A and B in AF = B
+%% Build the matrices A and B in Af = B = -1 (enforcing F33 = 1)
 A = [pts1(:, 1) .* pts2(:, 1), pts1(:, 1) .* pts2(:, 2), pts1(:, 1), ...
      pts1(:, 2) .* pts2(:, 1), pts1(:, 2) .* pts2(:, 2), pts1(:, 2), ...
      pts2(:, 1), pts2(:, 2)];
@@ -23,8 +23,8 @@ A = [pts1(:, 1) .* pts2(:, 1), pts1(:, 1) .* pts2(:, 2), pts1(:, 1), ...
 B = -ones(size(pts1, 1), 1);
 
 %% Calculate the Fundamental matrix F
-Fs = A \ B; 
-F = reshape([Fs; 1], [3 3]);
+f = A \ B; 
+F = reshape([f; 1], [3 3]);
 
 %% Enforce the singularity condition on F
 [U, S, V] = svd(F);
