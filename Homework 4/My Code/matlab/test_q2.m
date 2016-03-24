@@ -7,7 +7,7 @@ img1 = imread('..\data\im1.png');
 img2 = imread('..\data\im2.png');
 
 % Calculate the scaling factor M (the largest size of the images)
-M = max(max(size(img1), size(img2)));
+M = max([size(img1), size(img2)]);
 
 %% Q 2.1 Test the 8-point algorithm
 
@@ -16,6 +16,10 @@ load('..\data\some_corresp.mat');
 
 % Calculate fundamental matrix using 8-point algorithm
 F = eightpoint(pts1, pts2, M);
+
+% Print the fundamental matrix
+fprintf('F estimated using the 8-point algorithm is:\n');
+disp(F);
 
 % Save the results
 save('../results/q2_1.mat', 'F', 'M', 'pts1', 'pts2');
@@ -52,18 +56,37 @@ pts2 = [
 % Calculate fundamental matrix using 7-point algorithm
 F = sevenpoint(pts1, pts2, M);
 
+% Print the fundamental matrices
+for i = 1 : numel(F)
+    fprintf('F%d estimated using the 7-point algorithm is:\n', i);
+    disp(F{i});
+end
+
 % Save the results
 save('../results/q2_2.mat', 'F', 'M', 'pts1', 'pts2');
 
 % Display the interactive epipolar line GUI
-FundMatNumber = 3;
-displayEpipolarF(img1, img2, F{FundMatNumber});
+% displayEpipolarF(img1, img2, F{1});
+% displayEpipolarF(img1, img2, F{2});
+% displayEpipolarF(img1, img2, F{3});
 
-roots
+%% Q 2.X Test the Automatic Computation of F using RANSAC
 
+% Load the noisy correspondences with 75% inliers
+load('..\data\some_corresp_noisy.mat');
 
+% Print the fundamental matrix
+fprintf('Starting estimation of fundamental matrix using RANSAC...\n');
 
+% Calculate the fundamental matrix using 7-point algorithm with RANSAC
+F = ransacF(pts1, pts2, M);
 
-% load('..\data\some_corresp_noisy.mat');
-% Fnoisy = eightpoint_norm(pts1, pts2, M);
-% displayEpipolarF(img1,img2,Fnoisy);
+% Print the fundamental matrix
+fprintf('F estimated using RANSAC is:\n');
+disp(F);
+
+% Save the results
+save('../results/q2_X.mat', 'F', 'M', 'pts1', 'pts2');
+
+% Display the interactive epipolar line GUI
+displayEpipolarF(img1, img2, F);
