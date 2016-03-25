@@ -21,7 +21,7 @@ load('../data/intrinsics.mat');
 %% Q 2.7 Perform 3D Visualization
 
 % Load the points in the first image
-load('..\data\templeCoords.mat');
+load('../data/templeCoords.mat');
 
 % Allocate space for the result points
 x2 = zeros(size(x1));
@@ -36,7 +36,7 @@ end
 [M1, M2, P] = computeProjectiveMatrices(F, K1, K2, [x1 y1], [x2 y2]);
 
 % Save the results
-save('q2_7.mat', 'F', 'M1', 'M2');
+save('../results/q2_7.mat', 'F', 'M1', 'M2');
 
 % 3D Visualization
 scatter3(P(:, 1), P(:, 2), P(:, 3));
