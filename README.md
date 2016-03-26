@@ -57,4 +57,7 @@ This homework is complete with some extra point implementations (review the Writ
 
 
 ### Homework 4 (3D Reconstruction)
+This homework is complete with all extra point implementations (review the Writeup.pdf file for more detailed information).
+
+### Homework 5 (Image Understanding)
 Working on the homework right now.
