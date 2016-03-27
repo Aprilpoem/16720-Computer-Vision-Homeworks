@@ -1,5 +1,5 @@
 clc;
-%close all;
+close all;
 
 % List of test images
 images = [ 'test0.jpg'
