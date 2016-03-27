@@ -3,9 +3,6 @@ function [mag,ori] = mygradient(I)
 % compute image gradient magnitude and orientation at each pixel
 %
 
-%% Convert image to double
-I = im2double(I);
-
 %% Create the gradient filter
 filt = [-1, 0, 1];
 

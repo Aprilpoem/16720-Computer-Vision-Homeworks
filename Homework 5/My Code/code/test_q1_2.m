@@ -13,6 +13,9 @@ for i = 1 : size(images, 1)
     % Convert the test image to grayscale
     I = rgb2gray(I);
 
+    % Convert image to double
+    I = im2double(I);
+
     % Compute the histogram of gradient orientations
     ohist = hog(I);
 
