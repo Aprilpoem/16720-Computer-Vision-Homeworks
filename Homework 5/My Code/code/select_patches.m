@@ -8,6 +8,10 @@ close all;
 % Define the block size
 BlockSize = 8;
 
+% Define the final size
+FinalWidth = 128;
+FinalHeight = 128;
+
 % Ask for the number of training images
 NumOfImages = input('Please enter the number of training images [1]: ');
 if isempty(NumOfImages)
@@ -73,24 +77,41 @@ for n = 1 : NumOfImages
 
         % Get a patch area from user
         PosPatchRects{n}(i, :) = round(getrect);
-
+        
+        % Make the patch square
+        px = PosPatchRects{n}(i, 1);
+        py = PosPatchRects{n}(i, 2);
+        pw = PosPatchRects{n}(i, 3);
+        ph = PosPatchRects{n}(i, 4);
+        if pw < ph
+            px = px - (ph - pw) / 2;
+            pw = ph;
+            px = max(px, 1);
+            px = min(px, size(Images{n}, 2) - pw);
+        elseif ph < pw
+            py = py - (pw - ph) / 2;
+            ph = pw;
+            py = max(py, 1);
+            py = min(py, size(Images{n}, 1) - ph);
+        end
+        PosPatchRects{n}(i, :) = [px py pw ph];
+        
         % Retrieve the patch
         PosTemplates{n}{i} = Images{n}(PosPatchRects{n}(i, 2) : ...
             PosPatchRects{n}(i, 2) + PosPatchRects{n}(i, 4), ...
-            PosPatchRects{n}(i, 1) : PosPatchRects{n}(i, 1) + PosPatchRects{n}(i, 3));
+            PosPatchRects{n}(i, 1) : PosPatchRects{n}(i, 1) + ...
+            PosPatchRects{n}(i, 3));
 
     end
 
     % Calculate minimum and maximum patch dimensions
-    minWidth = min(PosPatchRects{n}(:, 3));
-    maxWidth = max(PosPatchRects{n}(:, 3));
-    minHeight = min(PosPatchRects{n}(:, 4));
-    maxHeight = max(PosPatchRects{n}(:, 4));
+    minPatchSize = min(PosPatchRects{n}(:, 3));
+    maxPatchSize = max(PosPatchRects{n}(:, 3));
 
-    % Randomly select the negative patches in the image without an overlap to
-    % other examples
-    % Note: It select an area in the image with width/height between the
-    % maximum and minimum width/heigh of the selected positive patches
+    % Randomly select the negative patches in the image without an overlap
+    % to the other examples
+    % Note: It selects an area in the image with size between the
+    % maximum and minimum size of the selected positive patches
     for i = 1 : NumOfNegatives
 
         overlap = 1;
@@ -100,14 +121,13 @@ for n = 1 : NumOfImages
             overlap = 0;
 
             % Calculate a patch area
-            patchx = randi(size(Images{n}, 2) - minWidth);
-            patchy = randi(size(Images{n}, 1) - minHeight);
-            patchw = randi(maxWidth - minWidth + 1) + minWidth;
-            patchh = randi(maxHeight - minHeight + 1) + minHeight;
-
+            patchx = randi(size(Images{n}, 2) - minPatchSize);
+            patchy = randi(size(Images{n}, 1) - minPatchSize);
+            patchsize = randi(maxPatchSize - minPatchSize + 1) + minPatchSize;
+            
             % Check if the box exceeds image boundaries
-            if patchx + patchw > size(Images{n}, 2) || ...
-                    patchy + patchh > size(Images{n}, 1)
+            if patchx + patchsize > size(Images{n}, 2) || ...
+                    patchy + patchsize > size(Images{n}, 1)
                 overlap = 1;
                 continue;
             end
@@ -115,18 +135,18 @@ for n = 1 : NumOfImages
             % Check for overlap
             for j = 1 : NumOfPositives
                 if abs(patchx - PosPatchRects{n}(j, 1)) * 2 < ...
-                        patchw + PosPatchRects{n}(j, 3) && ...
+                        patchsize + PosPatchRects{n}(j, 3) && ...
                         abs(patchy - PosPatchRects{n}(j, 2)) * 2 < ...
-                        patchh + PosPatchRects{n}(j, 4)
+                        patchsize + PosPatchRects{n}(j, 4)
                     overlap = 1;
                     break;
                 end
             end
             for j = 1 : i - 1
                 if abs(patchx - NegPatchRects{n}(j, 1)) * 2 < ...
-                        patchw + NegPatchRects{n}(j, 3) && ...
+                        patchsize + NegPatchRects{n}(j, 3) && ...
                         abs(patchy - NegPatchRects{n}(j, 2)) * 2 < ...
-                        patchh + NegPatchRects{n}(j, 4)
+                        patchsize + NegPatchRects{n}(j, 4)
                     overlap = 1;
                     break;
                 end
@@ -134,7 +154,7 @@ for n = 1 : NumOfImages
             
         end
         
-        NegPatchRects{n}(i, :) = [patchx patchy patchw patchh];
+        NegPatchRects{n}(i, :) = [patchx patchy patchsize patchsize];
         
         % Retrieve the patch
         NegTemplates{n}{i} = Images{n}(NegPatchRects{n}(i, 2) : ...
@@ -169,24 +189,15 @@ for i = 1 : NumOfImages
     end
 end
 
-%% Resize the patches with the stated requirements
+%% Resize the patches to final size
 
-% Find the average width and height of the templates
-AverageWidth = TotalWidth / TotalExamples;
-AverageHeight = TotalHeight / TotalExamples;
-
-% Change the average height and width to the nearest multiple of BlockSize
-AverageWidth = round(AverageWidth / BlockSize) * BlockSize;
-AverageHeight = round(AverageHeight / BlockSize) * BlockSize;
-
-% Resize the patches
 for i = 1 : numel(template_images_pos)
     template_images_pos{i} = imresize(template_images_pos{i}, ...
-        [AverageHeight AverageWidth]);
+        [FinalHeight FinalWidth]);
 end
 for i = 1 : numel(template_images_neg)
     template_images_neg{i} = imresize(template_images_neg{i}, ...
-        [AverageHeight AverageWidth]);
+        [FinalHeight FinalWidth]);
 end
 
 %% Show the patches
