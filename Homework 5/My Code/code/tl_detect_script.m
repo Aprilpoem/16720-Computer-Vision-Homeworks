@@ -13,15 +13,18 @@ ndet = 1;
 [x, y, score] = detect(Itest, template, ndet);
 draw_detection(x, y, Itest);
 
+% Perform detection with positive and negative examples
 template = tl_pos_neg(template_images_pos, template_images_neg);
 [x, y, score] = detect(Itest, template, ndet);
 draw_detection(x, y, Itest);
 
-return;
-
+% Perform detection with Linear Discriminative Analysis (LDA)
+lambda = 0.4;
 template = tl_lda(template_images_pos, template_images_neg, lambda);
-[x,y,score] = detect(Itest,template,ndet);
-draw_detection();
+[x, y, score] = detect(Itest, template, ndet);
+draw_detection(x, y, Itest);
+
+return;
 
 det_res = multiscale_detect(Itest, template, ndet);
 draw_detection();
