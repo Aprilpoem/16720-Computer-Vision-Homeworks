@@ -26,7 +26,7 @@ thresh = 0.1 * max(mag(:));
 Nbins = 9;
 
 % Create orientation bins
-Bins = linspace(-pi / 2, pi / 2, Nbins + 1);
+Bins = linspace(-pi, pi, Nbins + 1);
 
 % Divide the image orientations in to blocks
 OriBlocks = im2col(ori, [BlockSize BlockSize], 'distinct');
@@ -41,6 +41,12 @@ ohist = zeros(size(OriBlocks, 2), Nbins);
 for i = 1 : Nbins
     criteria = MaskBlocks & OriBlocks > Bins(i) & OriBlocks <= Bins(i + 1);
     ohist(:, i) = sum(criteria)';
+
+    % Correct for orientation == 0
+    if 0 > Bins(i) && 0 <= Bins(i + 1)
+        criteria = MaskBlocks & OriBlocks == 0;
+        ohist(:, i) = ohist(:, i) - sum(criteria)';
+    end
 end
 
 %% Normalize so that sum over orientation bins is 1 for each block
