@@ -16,8 +16,8 @@ MapRows = size(Map, 1);
 MapCols = size(Map, 2);
 
 % Size of the template
-TemplateRows = size(template, 1);
-TemplateCols = size(template, 2);
+TemplateRows = ceil(BlockSize * sqrt(2));
+TemplateCols = ceil(BlockSize * sqrt(2));
 
 % Overlap threshold (distance of blocks to be considered non-overlapping)
 OverlapRows = BlockSize * TemplateRows;
@@ -58,11 +58,12 @@ for i = 1 : length(heatmapSortedInds)
 
     % Calculate the row and col of the index in the image coordinates
     [blkrow, blkcol] = ind2sub(size(heatmap), heatmapSortedInds(i));
-    imgrow = BlockSize * blkrow;
-    imgcol = BlockSize * blkcol;
+    imgrow = BlockSize * blkrow - BlockSize / 2;
+    imgcol = BlockSize * blkcol - BlockSize / 2;
 
     % Add current detection if there is no spatial overlap with the 
-    % previous detections
+    % previous detections (the detections must be at least a bounding box
+    % apart)
     if nnz(abs(x - imgcol) < OverlapCols & abs(y - imgrow) < OverlapRows) == 0
         score = [score; heatmap(blkrow, blkcol)];
         x = [x; imgcol];

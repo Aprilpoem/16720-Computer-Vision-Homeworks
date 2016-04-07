@@ -54,7 +54,7 @@ end
 % Calculate sums for each block
 histSum = sum(ohist, 2);
 
-% Convert the sums vestor to a matrix of the size of the histogram
+% Convert the sums vector to a matrix of the size of the histogram
 histSumMat = repmat(histSum, 1, Nbins);
 
 % Normalize the histogram

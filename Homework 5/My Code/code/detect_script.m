@@ -35,7 +35,7 @@ template = template/nclick;
 %
 % load a test image
 %
-Itest = im2double(rgb2gray(imread('../data/test3.jpg')));
+Itest = im2double(rgb2gray(imread('../data/test6.jpg')));
 
 % find top detections in Itest
 ndet = 1;
