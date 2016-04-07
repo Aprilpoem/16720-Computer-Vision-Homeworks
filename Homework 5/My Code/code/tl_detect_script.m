@@ -11,18 +11,20 @@ load('template_images_neg.mat');
 template = tl_pos(template_images_pos);
 ndet = 1;
 [x, y, score] = detect(Itest, template, ndet);
-draw_detection(x, y, Itest);
+draw_detection(Itest, ndet, x, y, 1);
 
 % Perform detection with positive and negative examples
 template = tl_pos_neg(template_images_pos, template_images_neg);
+ndet = 1;
 [x, y, score] = detect(Itest, template, ndet);
-draw_detection(x, y, Itest);
+draw_detection(Itest, ndet, x, y, 1);
 
 % Perform detection with Linear Discriminative Analysis (LDA)
 lambda = 0.4;
 template = tl_lda(template_images_pos, template_images_neg, lambda);
+ndet = 1;
 [x, y, score] = detect(Itest, template, ndet);
-draw_detection(x, y, Itest);
+draw_detection(Itest, ndet, x, y, 1);
 
 return;
 
@@ -33,14 +35,14 @@ end
 
 
 
-function draw_detection(x, y, I)
+function draw_detection(Itest, ndet, x, y, scale)
 
 % Detection rectangle size
 RectSize = 128;
 
 % Show the image
 figure; clf;
-imshow(I);
+imshow(Itest);
 
 % Draw the detections. Draw a rectangle. use color to encode confidence of 
 % detection top scoring are green, fading to red.

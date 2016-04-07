@@ -16,8 +16,4 @@ mag = sqrt(gradx.^2 + grady.^2);
 % Compute the directions in (-pi, pi] range
 ori = atan2(grady, gradx);
 
-% Compute the orientations in (-pi/2, pi/2] range
-ori(ori > pi / 2) = ori(ori > pi / 2) - pi;
-ori(ori <= - pi / 2) = ori(ori <= - pi / 2) + pi;
-
 end
