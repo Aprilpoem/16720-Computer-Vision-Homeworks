@@ -78,11 +78,26 @@ for n = 1 : NumOfImages
         % Get a patch area from user
         PosPatchRects{n}(i, :) = round(getrect);
         
-        % Make the patch square
+        % Make the patch sizes a multiple of block size
         px = PosPatchRects{n}(i, 1);
         py = PosPatchRects{n}(i, 2);
         pw = PosPatchRects{n}(i, 3);
         ph = PosPatchRects{n}(i, 4);
+        if pw <= ph
+            oldph = ph;
+            ph = BlockSize * round(ph / BlockSize);
+            py = py - round((ph - oldph) / 2);
+            py = max(py, 1);
+            py = min(py, size(Images{n}, 1) - ph);
+        else
+            oldpw = pw;
+            px = px - round((pw - oldpw) / 2);
+            pw = ph;
+            px = max(px, 1);
+            px = min(px, size(Images{n}, 2) - pw);
+        end
+        
+        % Make the patch square
         if pw < ph
             px = px - (ph - pw) / 2;
             pw = ph;
@@ -94,6 +109,8 @@ for n = 1 : NumOfImages
             py = max(py, 1);
             py = min(py, size(Images{n}, 1) - ph);
         end
+        
+        % Update the patch box with the new calculated parameters
         PosPatchRects{n}(i, :) = [px py pw ph];
         
         % Retrieve the patch
