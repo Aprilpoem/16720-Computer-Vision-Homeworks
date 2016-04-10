@@ -26,10 +26,8 @@ ndet = 1;
 [x, y, score] = detect(Itest, template, ndet);
 draw_detection(Itest, ndet, x, y, 1);
 
-return;
-
 det_res = multiscale_detect(Itest, template, ndet);
-draw_detection();
+draw_detection(Itest, ndet, det_res(:, 1), det_res(:, 2), det_res(:, 3));
 
 end
 
@@ -38,7 +36,7 @@ end
 function draw_detection(Itest, ndet, x, y, scale)
 
 % Detection rectangle size
-RectSize = 128;
+RectSize = 128 * scale;
 
 % Show the image
 figure; clf;
