@@ -5,6 +5,9 @@ close all;
 
 %% Definitions
 
+% Show resulted patches or not
+ShowPatches = true;
+
 % Define the block size
 BlockSize = 8;
 
@@ -27,9 +30,6 @@ PosPatchRects = cell(NumOfImages, 1);
 NegPatchRects = cell(NumOfImages, 1);
 PosTemplates = cell(NumOfImages, 1);
 NegTemplates = cell(NumOfImages, 1);
-TotalExamples = 0;
-TotalWidth = 0;
-TotalHeight = 0;
 
 %% Loop through the images
 for n = 1 : NumOfImages
@@ -75,8 +75,14 @@ for n = 1 : NumOfImages
         % Update the title on the image
         title(['Select the positive example #', num2str(i)]);
 
-        % Get a patch area from user
-        PosPatchRects{n}(i, :) = round(getrect);
+        % Get a patch area from user (repeat if the patch size is too low)
+        while true
+            PosPatchRects{n}(i, :) = round(getrect);
+            if PosPatchRects{n}(i, 3) > BlockSize / 2 && ...
+                PosPatchRects{n}(i, 4) > BlockSize / 2
+                break;
+            end
+        end
         
         % Make the patch sizes a multiple of block size
         px = PosPatchRects{n}(i, 1);
@@ -111,7 +117,7 @@ for n = 1 : NumOfImages
         end
         
         % Update the patch box with the new calculated parameters
-        PosPatchRects{n}(i, :) = [px py pw ph];
+        PosPatchRects{n}(i, :) = round([px py pw ph]);
         
         % Retrieve the patch
         PosTemplates{n}{i} = Images{n}(PosPatchRects{n}(i, 2) : ...
@@ -132,7 +138,8 @@ for n = 1 : NumOfImages
     for i = 1 : NumOfNegatives
 
         overlap = 1;
-        while overlap == 1
+        tries = 0;
+        while overlap == 1 && tries < 1000
             
             % Reset the overlap variable
             overlap = 0;
@@ -141,6 +148,7 @@ for n = 1 : NumOfImages
             patchx = randi(size(Images{n}, 2) - minPatchSize);
             patchy = randi(size(Images{n}, 1) - minPatchSize);
             patchsize = randi(maxPatchSize - minPatchSize + 1) + minPatchSize;
+            patchsize = round(patchsize / BlockSize) * BlockSize;
             
             % Check if the box exceeds image boundaries
             if patchx + patchsize > size(Images{n}, 2) || ...
@@ -151,42 +159,40 @@ for n = 1 : NumOfImages
             
             % Check for overlap
             for j = 1 : NumOfPositives
-                if abs(patchx - PosPatchRects{n}(j, 1)) * 2 < ...
-                        patchsize + PosPatchRects{n}(j, 3) && ...
-                        abs(patchy - PosPatchRects{n}(j, 2)) * 2 < ...
-                        patchsize + PosPatchRects{n}(j, 4)
+                if CheckOverlap([patchx, patchy, patchsize, patchsize], ...
+                        PosPatchRects{n}(j, :)) == true
                     overlap = 1;
                     break;
                 end
             end
             for j = 1 : i - 1
-                if abs(patchx - NegPatchRects{n}(j, 1)) * 2 < ...
-                        patchsize + NegPatchRects{n}(j, 3) && ...
-                        abs(patchy - NegPatchRects{n}(j, 2)) * 2 < ...
-                        patchsize + NegPatchRects{n}(j, 4)
+                if CheckOverlap([patchx, patchy, patchsize, patchsize], ...
+                        NegPatchRects{n}(j, :)) == true
                     overlap = 1;
                     break;
                 end
             end
-            
+
+            tries = tries + 1;
         end
         
-        NegPatchRects{n}(i, :) = [patchx patchy patchsize patchsize];
-        
-        % Retrieve the patch
-        NegTemplates{n}{i} = Images{n}(NegPatchRects{n}(i, 2) : ...
-            NegPatchRects{n}(i, 2) + NegPatchRects{n}(i, 4), ...
-            NegPatchRects{n}(i, 1) : NegPatchRects{n}(i, 1) + NegPatchRects{n}(i, 3));
-
+        if overlap == 0
+            % Retrieve the patch
+            NegPatchRects{n}(i, :) = [patchx patchy patchsize patchsize];
+            NegTemplates{n}{i} = Images{n}(NegPatchRects{n}(i, 2) : ...
+                NegPatchRects{n}(i, 2) + NegPatchRects{n}(i, 4), ...
+                NegPatchRects{n}(i, 1) : ...
+                NegPatchRects{n}(i, 1) + NegPatchRects{n}(i, 3));
+        else
+            NegPatchRects{n} = NegPatchRects{n}(1 : i - 1, :);
+            NegTemplates{n} = NegTemplates{n}(1 : i - 1);
+            break;
+        end
     end
 
-    % Update the total number of examples
-    TotalExamples = TotalExamples + NumOfPositives + NumOfPositives;
+    % Output the number of actual negative examples selected
+    fprintf('The total of %d negative examples selected.\n', i - 1);
     
-    % Update the total width and height of the templates
-    TotalWidth = TotalWidth + sum(PosPatchRects{n}(:, 3)) + sum(NegPatchRects{n}(:, 3));
-    TotalHeight = TotalHeight + sum(PosPatchRects{n}(:, 4)) + sum(NegPatchRects{n}(:, 4));
-
     % Close the image
     close all;
 
@@ -217,41 +223,45 @@ for i = 1 : numel(template_images_neg)
         [FinalHeight FinalWidth]);
 end
 
-%% Show the patches
-SubPlotCols = max(numel(template_images_pos), numel(template_images_neg));
-figure; clf;
-for i = 1 : numel(template_images_pos)
-    subplot(2, SubPlotCols, i);
-    imshow(template_images_pos{i});
-    title(['Positive #', num2str(i)]);
-end
+if ShowPatches == true
 
-for i = 1 : numel(template_images_neg)
-    subplot(2, SubPlotCols, i + SubPlotCols);
-    imshow(template_images_neg{i});
-    title(['Negative #', num2str(i)]);
-end
-
-%% Draw the images with the selected areas
-for n = 1 : NumOfImages
+    %% Show the patches
+    SubPlotCols = max(numel(template_images_pos), numel(template_images_neg));
     figure; clf;
-    imshow(Images{n});
-    
-    % Draw positive selections
-    for i = 1 : size(PosPatchRects{n}, 1)
-        hold on;
-        rectangle('Position', PosPatchRects{n}(i, :), 'EdgeColor', 'green', ...
-            'LineWidth', 3, 'Curvature', [0.3 0.3]);
-        hold off;
+    for i = 1 : numel(template_images_pos)
+        subplot(2, SubPlotCols, i);
+        imshow(template_images_pos{i});
+        title(['Positive #', num2str(i)]);
     end
 
-    % Draw negative selections
-    for i = 1 : size(NegPatchRects{n}, 1)
-        hold on;
-        rectangle('Position', NegPatchRects{n}(i, :), 'EdgeColor', 'red', ...
-            'LineWidth', 3, 'Curvature', [0.3 0.3]);
-        hold off;
+    for i = 1 : numel(template_images_neg)
+        subplot(2, SubPlotCols, i + SubPlotCols);
+        imshow(template_images_neg{i});
+        title(['Negative #', num2str(i)]);
     end
+
+    %% Draw the images with the selected areas
+    for n = 1 : NumOfImages
+        figure; clf;
+        imshow(Images{n});
+
+        % Draw positive selections
+        for i = 1 : size(PosPatchRects{n}, 1)
+            hold on;
+            rectangle('Position', PosPatchRects{n}(i, :), 'EdgeColor', 'green', ...
+                'LineWidth', 3, 'Curvature', [0.3 0.3]);
+            hold off;
+        end
+
+        % Draw negative selections
+        for i = 1 : size(NegPatchRects{n}, 1)
+            hold on;
+            rectangle('Position', NegPatchRects{n}(i, :), 'EdgeColor', 'red', ...
+                'LineWidth', 3, 'Curvature', [0.3 0.3]);
+            hold off;
+        end
+    end
+    
 end
 
 %% Save the templates

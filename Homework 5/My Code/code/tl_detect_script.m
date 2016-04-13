@@ -4,7 +4,7 @@ function tl_detect_script
 close all;
 
 % Load the test image
-Itest = im2double(rgb2gray(imread('../data/test6.jpg')));
+Itest = im2double(rgb2gray(imread('../data/test22.jpg')));
 
 % Load templates
 load('template_images_pos.mat');
@@ -12,33 +12,32 @@ load('template_images_neg.mat');
 
 %% Perform detection with positive examples
 template = tl_pos(template_images_pos);
-ndet = 1;
+ndet = 5;
 [x, y, ~] = detect(Itest, template, ndet);
-draw_detection(Itest, ndet, x, y, 1);
+draw_detection(Itest, ndet, x, y, ones(ndet, 1));
 
 %% Perform detection with positive and negative examples
 template = tl_pos_neg(template_images_pos, template_images_neg);
-ndet = 1;
+ndet = 5;
 [x, y, ~] = detect(Itest, template, ndet);
-draw_detection(Itest, ndet, x, y, 1);
+draw_detection(Itest, ndet, x, y, ones(ndet, 1));
 
 %% Perform detection with Linear Discriminative Analysis (LDA)
-lambda = 0.4;
+lambda = 0.01;
 template = tl_lda(template_images_pos, template_images_neg, lambda);
-ndet = 1;
+ndet = 5;
 [x, y, ~] = detect(Itest, template, ndet);
-draw_detection(Itest, ndet, x, y, 1);
+draw_detection(Itest, ndet, x, y, ones(ndet, 1));
 
 %% Perform multi-scale detection with Linear Discriminative Analysis (LDA)
-Itest = im2double(rgb2gray(imread('../custom/test102.jpg')));
-ndet = 2;
-lambda = 0.4;
+Itest = im2double(rgb2gray(imread('../data/test22.jpg')));
+ndet = 6;
+lambda = 0.01;
 template = tl_lda(template_images_pos, template_images_neg, lambda);
 det_res = multiscale_detect(Itest, template, ndet);
 draw_detection(Itest, ndet, det_res(:, 1), det_res(:, 2), det_res(:, 3));
 
 end
-
 
 %% Function to draw detections on the image
 function draw_detection(Itest, ndet, x, y, scale)

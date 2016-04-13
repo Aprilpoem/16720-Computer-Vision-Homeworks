@@ -1,9 +1,9 @@
 % load a training example image
-Itrain = im2double(rgb2gray(imread('../custom/test100.jpg')));
+Itrain = im2double(rgb2gray(imread('../custom/test111.jpg')));
 
 %have the user click on some training examples.  
 % If there is more than 1 example in the training image (e.g. faces), you could set nclicks higher here and average together
-nclick = 1;
+nclick = 2;
 figure(1); clf;
 imshow(Itrain);
 [x,y] = ginput(nclick); %get nclicks from the user
@@ -35,7 +35,7 @@ template = template/nclick;
 %
 % load a test image
 %
-Itest= im2double(rgb2gray(imread('../custom/test101.jpg')));
+Itest= im2double(rgb2gray(imread('../custom/test112.jpg')));
 
 % find top detections in Itest
 ndet = 2;

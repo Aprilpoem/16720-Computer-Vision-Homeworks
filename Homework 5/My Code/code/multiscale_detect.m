@@ -17,12 +17,8 @@ BlockSize = 8;
 % Scale factor to rescale image at each layer
 ScaleFactor = 0.7;
 
-% Calculate the maximum scale
-MaxScale = min(size(image, 1) / (BlockSize * size(template, 1)), ...
-               size(image, 2) / (BlockSize * size(template, 2)));
-MaxScale = fix(log(MaxScale) / log(ScaleFactor));
-
-% Keep the curent scale
+% Calculate the curent scale (almost 3 times the current scale)
+MaxScale = fix(log(3) / log(ScaleFactor));
 CurrentScale = ScaleFactor ^ MaxScale;
 
 % Keep the scores
@@ -47,13 +43,15 @@ while true
     [x, y, score] = detect(image_scaled, template, ndet);
     x = round(x ./ CurrentScale);
     y = round(y ./ CurrentScale);
-
-    for i = 1 : ndet
+    
+    for i = 1 : length(x)
         % Check for overlaps with previous results
         hasOverlaps = false;
         for j = 1 : ndet
-            if abs(x(i) - det_res(j, 1)) < size(template, 1) * BlockSize / CurrentScale &&...
-              abs(y(i) - det_res(j, 2)) < size(template, 2) * BlockSize / CurrentScale
+            if abs(x(i) - det_res(j, 1)) * 2 / (size(template, 1) * BlockSize) < ...
+              1 / CurrentScale + 1 / det_res(j, 3) &&...
+              abs(y(i) - det_res(j, 2)) * 2 / (size(template, 2) * BlockSize) < ...
+              1 / CurrentScale + 1 / det_res(j, 3) 
                 hasOverlaps = true;
                 % Replace the overlapped result if has higher score
                 if score(i) > Scores(j)
@@ -79,5 +77,9 @@ while true
     CurrentScale = CurrentScale * ScaleFactor;
     
 end
+
+%% Sort the results
+[~, ind] = sort(Scores, 'descend');
+det_res = det_res(ind, :);
 
 end
