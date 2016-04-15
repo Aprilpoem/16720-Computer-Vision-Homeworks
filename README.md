@@ -55,9 +55,20 @@ TA comment about Q 5.1:
 ### Homework 3 (Lucas-Kanade Tracking & Background Subtraction)
 This homework is complete with some extra point implementations (review the Writeup.pdf file for more detailed information).
 
+TA comment about Q 1.1:
+
+> Adjustment: -5.000000e-01
+> 
+> Comment: Your A should be all I_x(x,y), I_y(x,y) stacked up for x,y 
+
+TA comment about Q 3.1-3.3:
+
+> Foreground/Background issue.
+> 
+> Comment: There were few regions not on cars that got captured as foreground.
 
 ### Homework 4 (3D Reconstruction)
 This homework is complete with all extra point implementations (review the Writeup.pdf file for more detailed information).
 
 ### Homework 5 (Image Understanding)
-Working on the homework right now.
+This homework is complete with extra point implementations (review the Writeup.pdf file for more detailed information). The only part not implemented is different scoring methods for Q2.6.
