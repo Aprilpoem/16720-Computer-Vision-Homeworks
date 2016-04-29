@@ -70,5 +70,15 @@ TA comment about Q 3.1-3.3:
 ### Homework 4 (3D Reconstruction)
 This homework is complete with all extra point implementations (review the Writeup.pdf file for more detailed information).
 
+TA comment about Q 1.3:
+
+> Partially correct.
+> 
+> Comment: Derivation not clear. Diagram not so clear. 
+
+TA comment about Q 2.8:
+
+> Problem with reconstruction but good visualization or vice versa.
+
 ### Homework 5 (Image Understanding)
 This homework is complete with extra point implementations (review the Writeup.pdf file for more detailed information). The only part not implemented is different scoring methods for Q2.6.
